@@ -3,4 +3,6 @@ plotly
 yfinance
 selenium
 webdriver-manager
+html5lib
+
 requests
