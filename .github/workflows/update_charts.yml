@@ -31,6 +31,7 @@ jobs:
           python "run_analysis_eth.py"
           python "ethereum_growth_chart.py"
           python "btc_growth_chart.py"
+          python "update_btc_flow.py"
 
       # ▼▼▼ [수정 2] 안정적인 push를 위해 git pull 추가 ▼▼▼
       - name: Commit and push changes
