@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CryptoFlow Tracker - BTC/ETH ETF 비교</title>
-<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" referrerpolicy="no-referrer" rel="stylesheet"/>
-<style>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>CryptoFlow Tracker - BTC/ETH ETF 비교</title>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" referrerpolicy="no-referrer" rel="stylesheet"/>
+    <style>
         /* CSS 스타일은 이전과 동일하게 유지됩니다. */
         body { font-family: 'Noto Sans KR', sans-serif; margin: 0; background-color: #121826; color: #E5ECF6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -43,9 +42,16 @@
         .hidden { display: none; }
         footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #2a3f5f; font-size: 14px; color: #8c9db3; line-height: 1.6; }
         .chart-source { position: absolute; bottom: 20px; right: 20px; font-size: 12px; color: #8c9db3; z-index: 10; }
+        .supplyCalculatorSince {
+            margin-top: 1px; /* 제목과의 세로 간격 */
+            margin-bottom: 0;
+            font-size: 14px; /* 부제목 글자 크기 */
+            color: #8c9db3;  /* 부제목 글자 색상 (기존 timestamp와 동일하게) */
+            font-weight: 400; /* 일반 굵기 */
+        }
     </style>
 <!-- Google tag (gtag.js) -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-QBCMWL9C06"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QBCMWL9C06"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -53,6 +59,7 @@
 
   gtag('config', 'G-QBCMWL9C06');
 </script>
+
 </head>
 <body>
 <div class="container">
@@ -97,27 +104,26 @@
 <iframe id="comparison-chart-iframe" src="graph_btc.html"></iframe>
 </div>
 <div class="supply-chart-section" id="supply-chart-section">
-<div class="chart-header">
-<h2 id="supply-chart-title-graph"></h2>
-</div>
-<button class="fullscreen-btn" id="supply-chart-fullscreen-btn" title="전체 화면">↗</button>
-<iframe id="supply-chart-iframe-graph" src="about:blank"></iframe>
+    <div class="chart-header">
+        <h2 id="supply-chart-title-graph"></h2>
+    </div>
+    <button class="fullscreen-btn" id="supply-chart-fullscreen-btn" title="전체 화면">↗</button>
+    <iframe id="supply-chart-iframe-graph" src="about:blank"></iframe>
 </div>
 <div class="supply-details-section" id="supply-details-section">
-<div class="chart-header">
-<h2 id="supply-calculator-title"></h2>
-</div>
-<button class="fullscreen-btn" id="supply-calculator-fullscreen-btn" title="전체 화면">↗</button>
-<iframe id="supply-calculator-iframe" src="about:blank"></iframe>
+    <div class="chart-header">
+        <div>
+            <h2 id="supply-calculator-title"></h2>
+            <h5 id="supplyCalculatorSince"></h5>
+        </div>
+        </div>
+    <button class="fullscreen-btn" id="supply-calculator-fullscreen-btn" title="전체 화면">↗</button>
+    <iframe id="supply-calculator-iframe" src="about:blank"></iframe>
 </div>
 </main>
 <footer>
-<p>
-<a href="https://hits.seeyoufarm.com">
-<img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdlwpsms3gkrsus-glitch.github.io%2Fcrypto_price_vs_spot_etf_flow-chart%2F&amp;count_bg=%2379C83D&amp;title_bg=%23555555&amp;icon=&amp;icon_color=%23E7E7E7&amp;title=visitors&amp;edge_flat=false"/>
-</a>
-</p>
-<p>Website ver: 2.1 ver | Spot ETF Flow Source: <a href="https://farside.co.uk/" target="_blank">Farside Investors</a></p>
+ <p>Website ver: 2.3.0 ver | <a href="release-notes.html">Release note 바로가기</a></p>
+<p>Spot ETF Flow Source: <a href="https://farside.co.uk/" target="_blank">Farside Investors</a></p>
 <p>Created by: <a href="mailto:dlwpsms3gkrsus@gmail.com">dlwpsms3gkrsus@gmail.com</a></p>
 <p>naver blog: <a href="https://blog.naver.com/jsw3500">jsw3500@naver.com</a></p>
 </footer>
@@ -174,14 +180,16 @@
 
             // ▼▼▼ [수정됨] 공급량 관련 섹션 제어 로직 ▼▼▼
             if (currentCoin === 'BTC') {
-                supplyChartTitleGraph.innerText = 'Bitcoin Supply Details';
+                supplyChartTitleGraph.innerText = 'Bitcoin Supply & Price Chart';
                 supplyChartIframeGraph.src = 'graph_btc_supply.html';
-                supplyCalculatorTitle.innerText = '비트코인 공급량 계산기';
+                supplyCalculatorTitle.innerText = '비트코인 공급량 계산기 (BTC Supply Calculator)';
+                supplyCalculatorSince.innerText = 'since 2009-01-03 조회 가능';
                 supplyCalculatorIframe.src = 'btc_supply_calculator.html';
             } else { // ETH
-                supplyChartTitleGraph.innerText = 'Ethereum Supply Details';
+                supplyChartTitleGraph.innerText = 'Ethereum Supply & Price Chart';
                 supplyChartIframeGraph.src = 'graph_eth_supply.html';
-                supplyCalculatorTitle.innerText = '이더리움 공급량 계산기';
+                supplyCalculatorTitle.innerText = '이더리움 공급량 계산기 (ETH Supply Calculator)';
+                supplyCalculatorSince.innerText = 'since 2015-07-30 조회 가능';
                 supplyCalculatorIframe.src = 'eth_supply_calculator.html';
             }
             supplyChartSection.classList.remove('hidden');
