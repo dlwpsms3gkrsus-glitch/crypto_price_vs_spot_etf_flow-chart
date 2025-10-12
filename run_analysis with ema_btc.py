@@ -133,7 +133,21 @@ def create_chart(df_price, df_flow):
         file_name = 'graph_btc.html'
         fig.write_html(file_name)
 
-        print(f"✅ 최종 그래프 생성 완료! '{file_name}' 파일을 확인해주세요.")
+        # [구조 수정] SEO 태그 삽입 로직을 try 블록 안으로 이동시킵니다.
+        with open(file_name, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+
+        seo_tags = """
+    <title>비트코인 가격 vs 현물 ETF 누적 순유입 비교 차트 - CryptoFlow Tracker</title>
+    <meta name="description" content="비트코인(BTC) 가격, 이동평균선(EMA)과 현물 ETF의 누적 순유입 데이터를 비교 분석하는 대화형 차트입니다. 기간별 데이터 조회 및 슬라이더를 지원합니다.">
+    """
+
+        html_content = html_content.replace('<head>', f'<head>{seo_tags}', 1)
+
+        with open(file_name, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        print(f"✅ 최종 그래프 생성 및 SEO 최적화 완료! '{file_name}' 파일을 확인해주세요.")
 
     except Exception as e:
         print(f"❌ 차트 생성 중 오류 발생: {e}")
@@ -154,4 +168,5 @@ if __name__ == '__main__':
         create_chart(price_data, etf_data)
     else:
         print("\n❗️데이터 수집 과정에 문제가 있어 차트를 생성하지 못했습니다.")
+
 
