@@ -72,15 +72,16 @@ def parse_flow_table(html):
     candidates = []
     for table in tables:
         table = _flat_columns(table.copy())
-        cols_lower = [c.lower() for c in table.columns]
-        if "date" in cols_lower and "total" in cols_lower:
+        if "total" in [c.lower() for c in table.columns] and len(table.columns) >= 3:
             candidates.append(table)
     if not candidates:
-        raise ValueError(f"Date/Total 열이 있는 표를 찾지 못했습니다 (표 {len(tables)}개 검사).")
+        raise ValueError(f"Total 열이 있는 표를 찾지 못했습니다 (표 {len(tables)}개 검사).")
     table = max(candidates, key=len)  # 가장 긴 표 = 전체 일별 데이터
 
-    date_col = table.columns[[c.lower() for c in table.columns].index("date")]
-    total_col = table.columns[[c.lower() for c in table.columns].index("total")]
+    cols_lower = [c.lower() for c in table.columns]
+    # BTC 표는 첫 열 제목이 'Date', ETH 표는 비어 있음 → 'date'가 없으면 첫 열을 날짜로 사용
+    date_col = table.columns[cols_lower.index("date")] if "date" in cols_lower else table.columns[0]
+    total_col = table.columns[cols_lower.index("total")]
     fund_cols = [c for c in table.columns if c not in (date_col, total_col)]
 
     table["Date"] = pd.to_datetime(table[date_col].astype(str).str.strip(), format="%d %b %Y", errors="coerce")
