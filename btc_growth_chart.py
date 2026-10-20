@@ -1,3 +1,4 @@
+from chart_theme import style_chart, save_chart
 import pandas as pd
 import requests
 import yfinance as yf
@@ -127,7 +128,8 @@ if __name__ == "__main__":
 
     # 5. HTML 파일로 저장
     file_name = f"graph_btc_supply.html"
-    fig.write_html(file_name)
+    style_chart(fig, coin='BTC', left_title='BTC Price (USD)', right_title='총공급량 (BTC)', right_fill=False, right_suffix=' BTC', right_tickformat='.3~s')  # 사이트 다크 테마 적용
+    save_chart(fig, file_name)
 
     print(f"\n✅ 성공! 모든 과정이 완료되었습니다.")
     print(f"결과물은 '{file_name}' 파일로 저장되었습니다.")
