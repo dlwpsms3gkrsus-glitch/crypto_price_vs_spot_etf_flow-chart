@@ -47,7 +47,7 @@ def fetch_html(url, wait_seconds=5):
 
 def _to_number(value):
     """'(1,113.7)' -> -1113.7, '655.3' -> 655.3, '-' / '' -> NaN"""
-    s = str(value).strip().replace(",", "")
+    s = str(value).strip().replace(",", "").replace("*", "")
     if s in ("", "-", "nan", "None"):
         return float("nan")
     negative = s.startswith("(") and s.endswith(")")
@@ -61,7 +61,14 @@ def _to_number(value):
 
 def _flat_columns(df):
     if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [str(c[-1]) for c in df.columns]
+        # ETH 표처럼 제목 줄이 2개(펀드명 / Fee)면 'Total'이 들어 있는 줄을 열 이름으로 사용
+        level = df.columns.nlevels - 1
+        for i in range(df.columns.nlevels):
+            if any(str(v).strip().lower() == "total" for v in df.columns.get_level_values(i)):
+                level = i
+                break
+        df.columns = [str(c[level]) for c in df.columns]
+    df.columns = ["" if str(c).startswith("Unnamed") else c for c in df.columns]
     df.columns = [str(c).strip() for c in df.columns]
     return df
 
