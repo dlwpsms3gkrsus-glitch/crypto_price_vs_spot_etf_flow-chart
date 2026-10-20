@@ -1,3 +1,4 @@
+from chart_theme import style_chart, save_chart
 import pandas as pd
 import yfinance as yf
 from selenium import webdriver
@@ -88,7 +89,8 @@ def create_chart(price_df, etf_df):
         # --- ▲▲▲ ---------------------------------- ▲▲▲ ---
 
         file_name = 'graph_eth.html'
-        fig.write_html(file_name)
+        style_chart(fig, coin='ETH', left_title='ETH Price (USD)', right_title='ETF 누적 순유입 (US$M)', right_suffix='M', right_tickprefix='$', right_ticksuffix='M')  # 사이트 다크 테마 적용
+        save_chart(fig, file_name)
         print(f"✅ 최종 그래프 생성 완료! '{file_name}' 파일을 확인해주세요.")
 
     except Exception as e:
