@@ -47,3 +47,7 @@ jobs:
           git pull --rebase
           git push
       # ▲▲▲ ---------------------------------------------------- ▲▲▲
+
+      # 데이터가 비었거나 오래되면 실행을 실패로 표시해 이메일 알림을 받습니다 (데이터 저장 후 마지막에 점검)
+      - name: Check ETF data freshness
+        run: python check_data.py

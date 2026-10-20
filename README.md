@@ -9,9 +9,9 @@ CryptoFlow Tracker는 비트코인(BTC)과 이더리움(ETH) 현물 ETF의 일�
 이 프로젝트는 매일 자동으로 최신 ETF 유입량 데이터를 수집하고, 이를 가격 데이터와 결합하여 인터랙티브 차트를 생성한 뒤, 웹사이트를 스스로 업데이트합니다. 사용자는 별도의 조작 없이 매일 아침 최신 데이터가 반영된 대시보드를 확인할 수 있습니다.
 
 ✨ 주요 기능 (Features)
-실시간 데이터 대시보드: CryptoCompare API를 통해 BTC와 ETH의 현재 가격 및 24시간 변동률을 실시간으로 표시합니다.
+실시간 데이터 대시보드: Coinbase API(예비: CoinGecko)를 통해 BTC와 ETH의 현재 가격 및 24시간 변동률을 실시간으로 표시합니다.
 
-일일 자동 업데이트: GitHub Actions를 사용하여 매일 한국 시간 오전 9시 10분에 Farside Investors의 ETF 유입량 데이터를 자동으로 스크랩하고, Yahoo Finance의 가격 데이터와 병합합니다.
+일일 자동 업데이트: GitHub Actions를 사용하여 매일 한국 시간 오후 6시 10분에 Farside Investors의 ETF 유입량 데이터를 자동으로 스크랩하고, Yahoo Finance의 가격 데이터와 병합합니다.
 
 다이나믹 코인 전환: BTC/ETH 버튼 클릭 한 번으로 헤더의 요약 정보부터 상세 비교 차트까지 모든 데이터가 해당 자산에 맞게 즉시 전환됩니다.
 
