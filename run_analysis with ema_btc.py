@@ -7,52 +7,11 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import time
 from io import StringIO # FutureWarning 방지를 위해 추가
+from etf_scraper import scrape_etf_flow as scrape_flow, save_flow_csv, load_flow_csv
 
 def scrape_etf_flow():
-    """
-    Farside Investors 웹사이트에서 현물 ETF 유입량 데이터를 스크레이핑하고 정제하여
-    데이터프레임으로 반환합니다.
-    """
-    print(" étape 1: Farside Investors에서 ETF 유입량 데이터를 스크레이핑합니다...")
-    url = "https://farside.co.uk/bitcoin-etf-flow-all-data/"
-    service = Service(ChromeDriverManager().install())
-    options = webdriver.ChromeOptions()
-    
-    options.add_argument('--headless') # GitHub Actions 환경을 위한 헤드리스 모드 활성화
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")# "나는 일반 사용자"임을 알리는 User-Agent 정보 추가
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    
-    try:
-        driver = webdriver.Chrome(service=service, options=options)
-        driver.get(url)
-        time.sleep(5)
-        html = driver.page_source
-        driver.quit()
-
-        all_tables = pd.read_html(StringIO(html), flavor='html5lib')
-
-        if len(all_tables) < 2:
-            print("❌ 스크레이핑 실패: 웹페이지에서 필요한 데이터 테이블을 찾을 수 없습니다.")
-            return None
-            
-        df_raw = all_tables[1]
-        
-        # 데이터 정제
-        df = df_raw.iloc[1:].reset_index(drop=True)
-        df = df.iloc[:, [0, -1]]
-        df.columns = ['Date', 'Total']
-        df['Total'] = df['Total'].astype(str).str.replace('(', '-', regex=False).str.replace(')', '', regex=False)
-        df['Total'] = pd.to_numeric(df['Total'], errors='coerce')
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df.dropna(subset=['Date'], inplace=True)
-        
-        print("✅ ETF 데이터 스크레이핑 및 정제 완료!")
-        return df
-
-    except Exception as e:
-        print(f"❌ ETF 데이터 스크레이핑 중 오류 발생: {e}")
-        return None
+    """Farside Investors에서 BTC 현물 ETF 일별 순유입 데이터를 수집합니다 (공용 모듈 사용)."""
+    return scrape_flow("BTC")
 
 def get_btc_price():
     """
@@ -86,7 +45,7 @@ def create_chart(df_price, df_flow):
     try:
         # 데이터 병합
         merged_df = pd.merge(df_price, df_flow, on='Date', how='left')
-        merged_df['Total'].fillna(0, inplace=True)
+        merged_df['Total'] = merged_df['Total'].fillna(0)
         
         # --- ▼▼▼ 핵심 수정 부분: EMA 계산 ▼▼▼ ---
         # ETF 누적 유입량 계산
@@ -141,9 +100,9 @@ def create_chart(df_price, df_flow):
 # --- 메인 실행 블록 ---
 if __name__ == '__main__':
     etf_data = scrape_etf_flow()
-    if etf_data is not None:
-        etf_data.to_csv('bitcoin_etf_total_flow.csv', index=False)
-        print("💾 'bitcoin_etf_total_flow.csv' 파일 저장 완료.")
+    # 수집 실패 시 기존 CSV를 지우지 않고, 기존 데이터로 차트를 그립니다.
+    if not save_flow_csv(etf_data, 'bitcoin_etf_total_flow.csv'):
+        etf_data = load_flow_csv('bitcoin_etf_total_flow.csv')
 
     price_data = get_btc_price()
     if price_data is not None:
@@ -154,4 +113,3 @@ if __name__ == '__main__':
         create_chart(price_data, etf_data)
     else:
         print("\n❗️데이터 수집 과정에 문제가 있어 차트를 생성하지 못했습니다.")
-

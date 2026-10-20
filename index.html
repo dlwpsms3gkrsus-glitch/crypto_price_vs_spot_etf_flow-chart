@@ -126,7 +126,7 @@
 </div>
 </main>
 <footer>
-<p>Website ver: 2.3.0 ver | <a href="release-notes.html">Release note 바로가기</a></p>
+<p>Website ver: 2.4.0 ver | <a href="release-notes.html">Release note 바로가기</a></p>
 <p>Spot ETF Flow Source: <a href="https://farside.co.uk/" target="_blank">Farside Investors</a></p>
 <p>Created by: <a href="mailto:dlwpsms3gkrsus@gmail.com">dlwpsms3gkrsus@gmail.com</a></p>
 <p>naver blog: <a href="https://blog.naver.com/jsw3500">jsw3500@naver.com</a></p>
@@ -168,8 +168,45 @@
         let lastPrice = 0;
 
         // --- 데이터 업데이트 함수 (fetchPrice, displayEtfData 등은 변경 없음) ---
-        async function fetchPrice(coin) { try { const response = await fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coin}&tsyms=USD`); const data = await response.json(); const priceData = data.RAW[coin].USD; priceTitleElement.innerText = `${coin === 'BTC' ? 'Bitcoin' : 'Ethereum'} Price`; cryptoPriceElement.innerText = `$${priceData.PRICE.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; const sign = priceData.CHANGE24HOUR >= 0 ? '+' : ''; cryptoChangeElement.innerText = `${sign}${priceData.CHANGE24HOUR.toFixed(2)} (${sign}${priceData.CHANGEPCT24HOUR.toFixed(2)}%)`; cryptoPriceElement.classList.toggle('up', priceData.PRICE > lastPrice); cryptoPriceElement.classList.toggle('down', priceData.PRICE < lastPrice); cryptoChangeElement.classList.toggle('up', priceData.CHANGE24HOUR >= 0); cryptoChangeElement.classList.toggle('down', priceData.CHANGE24HOUR < 0); lastPrice = priceData.PRICE; } catch (error) { console.error(`Error fetching ${coin} price:`, error); } }
-        async function displayEtfData(coin) { etfTitleElement.innerText = `Total ${coin} ETF Net Inflow`; const csvFileName = coin === 'BTC' ? 'bitcoin_etf_total_flow.csv' : 'ethereum_etf_total_flow.csv'; try { const response = await fetch(csvFileName); if (!response.ok) throw new Error('Network response was not ok.'); const csvText = await response.text(); const rows = csvText.trim().split('\n'); const lastRow = rows[rows.length - 1]; const dailyInflow = parseFloat(lastRow.split(',')[1]); let cumulativeInflow = 0; for (let i = 1; i < rows.length; i++) { const value = parseFloat(rows[i].split(',')[1]); if (!isNaN(value)) cumulativeInflow += value; } const formatLargeNumber = (num) => { if (Math.abs(num) >= 1.0e+9) return `$${(num / 1.0e+9).toFixed(2)}B`; if (Math.abs(num) >= 1.0e+6) return `$${(num / 1.0e+6).toFixed(2)}M`; return `$${num.toLocaleString()}`; }; etfTotalElement.innerText = formatLargeNumber(cumulativeInflow * 1000000); const sign = dailyInflow >= 0 ? '+' : ''; etfChangeElement.innerText = `${sign}${formatLargeNumber(dailyInflow * 1000000)} (Daily)`; etfTotalElement.classList.toggle('up', cumulativeInflow >= 0); etfTotalElement.classList.toggle('down', cumulativeInflow < 0); etfChangeElement.classList.toggle('up', dailyInflow >= 0); etfChangeElement.classList.toggle('down', dailyInflow < 0); } catch (error) { etfTotalElement.innerText = '데이터 로드 실패'; etfChangeElement.innerText = ''; } }
+        // 시세: Coinbase Exchange(기본) → CoinGecko(예비). 둘 다 API 키 없이 브라우저에서 호출 가능.
+        // (기존 CryptoCompare API는 이제 API 키 없이 호출하면 401을 반환해, 브라우저에서 CORS 오류로 보임)
+        async function getQuote(coin) {
+            try {
+                const r = await fetch(`https://api.exchange.coinbase.com/products/${coin}-USD/stats`);
+                if (!r.ok) throw new Error(`Coinbase HTTP ${r.status}`);
+                const d = await r.json();
+                const price = parseFloat(d.last), open = parseFloat(d.open);
+                if (!isFinite(price) || !isFinite(open) || open === 0) throw new Error('Coinbase: invalid data');
+                return { price, change: price - open, changePct: (price - open) / open * 100 };
+            } catch (e) {
+                console.warn('Coinbase price failed, trying CoinGecko:', e);
+                const id = coin === 'BTC' ? 'bitcoin' : 'ethereum';
+                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`);
+                if (!r.ok) throw new Error(`CoinGecko HTTP ${r.status}`);
+                const d = (await r.json())[id];
+                const price = d.usd, changePct = d.usd_24h_change;
+                return { price, changePct, change: price - price / (1 + changePct / 100) };
+            }
+        }
+        async function fetchPrice(coin) {
+            try {
+                const q = await getQuote(coin);
+                if (coin !== currentCoin) return; // 응답 도착 전에 코인을 바꾼 경우 무시
+                priceTitleElement.innerText = `${coin === 'BTC' ? 'Bitcoin' : 'Ethereum'} Price`;
+                cryptoPriceElement.innerText = `$${q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const sign = q.change >= 0 ? '+' : '';
+                cryptoChangeElement.innerText = `${sign}${q.change.toFixed(2)} (${sign}${q.changePct.toFixed(2)}%)`;
+                cryptoPriceElement.classList.toggle('up', lastPrice > 0 && q.price > lastPrice);
+                cryptoPriceElement.classList.toggle('down', lastPrice > 0 && q.price < lastPrice);
+                cryptoChangeElement.classList.toggle('up', q.change >= 0);
+                cryptoChangeElement.classList.toggle('down', q.change < 0);
+                lastPrice = q.price;
+            } catch (error) {
+                console.error(`Error fetching ${coin} price:`, error);
+                if (cryptoPriceElement.innerText === 'Loading...') cryptoPriceElement.innerText = '-';
+            }
+        }
+        async function displayEtfData(coin) { etfTitleElement.innerText = `Total ${coin} ETF Net Inflow`; const csvFileName = coin === 'BTC' ? 'bitcoin_etf_total_flow.csv' : 'ethereum_etf_total_flow.csv'; try { const response = await fetch(csvFileName); if (!response.ok) throw new Error('Network response was not ok.'); const csvText = await response.text(); const rows = csvText.trim().split('\n'); if (rows.length < 2) throw new Error('empty ETF data'); const lastRow = rows[rows.length - 1]; const dailyInflow = parseFloat(lastRow.split(',')[1]); let cumulativeInflow = 0; for (let i = 1; i < rows.length; i++) { const value = parseFloat(rows[i].split(',')[1]); if (!isNaN(value)) cumulativeInflow += value; } const formatLargeNumber = (num) => { if (Math.abs(num) >= 1.0e+9) return `$${(num / 1.0e+9).toFixed(2)}B`; if (Math.abs(num) >= 1.0e+6) return `$${(num / 1.0e+6).toFixed(2)}M`; return `$${num.toLocaleString()}`; }; etfTotalElement.innerText = formatLargeNumber(cumulativeInflow * 1000000); const sign = dailyInflow >= 0 ? '+' : ''; etfChangeElement.innerText = `${sign}${formatLargeNumber(dailyInflow * 1000000)} (Daily)`; etfTotalElement.classList.toggle('up', cumulativeInflow >= 0); etfTotalElement.classList.toggle('down', cumulativeInflow < 0); etfChangeElement.classList.toggle('up', dailyInflow >= 0); etfChangeElement.classList.toggle('down', dailyInflow < 0); } catch (error) { etfTotalElement.innerText = '데이터 로드 실패'; etfChangeElement.innerText = ''; } }
         function updateChart(coin) { chartTitleElement.innerText = `실시간 ${coin === 'BTC' ? '비트코인' : '이더리움'} 가격`; chartContainer.innerHTML = ''; new TradingView.widget({ "autosize": true, "symbol": `BITSTAMP:${coin}USD`, "interval": "D", "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "ko", "enable_publishing": false, "allow_symbol_change": false, "container_id": "chart-container" }); }
         function displayCurrentTime() { const now = new Date(); const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }; const usEasternTime = now.toLocaleString('en-US', { ...options, timeZone: 'America/New_York' }); const koreaTime = now.toLocaleString('ko-KR', { ...options, timeZone: 'Asia/Seoul' }); timestampElement.innerHTML = `🇺🇸 ${usEasternTime} (US Eastern)<br>🇰🇷 ${koreaTime} (Korea)`; }
         function updateComparisonChart(coin) { const coinName = coin === 'BTC' ? 'BTC' : 'ETH'; const chartFile = coin === 'BTC' ? 'graph_btc.html' : 'graph_eth.html'; const farsideLink = coin === 'BTC' ? 'https://farside.co.uk/bitcoin-etf-flow-all-data/' : 'https://farside.co.uk/ethereum-etf-flow-all-data/'; comparisonChartTitle.innerText = `${coinName} 현물 ETF 현금 흐름 & 가격 비교`; comparisonChartIframe.src = chartFile; farsideLinkBtn.href = farsideLink; }
