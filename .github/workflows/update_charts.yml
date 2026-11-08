@@ -35,6 +35,10 @@ jobs:
           python "BTC_SUPPLY_CAL_CREATE.py"
           python "ETH_SUPPLY_CAL CREATE.py"
 
+      # 데이터가 비었거나 오래되면 실행을 실패로 표시해 이메일 알림을 받습니다 (검사 통과 후에만 commit/push)
+      - name: Check ETF data freshness
+        run: python check_data.py
+
       # ▼▼▼ [수정 2] 안정적인 push를 위해 git pull 추가 ▼▼▼
       - name: Commit and push changes
         run: |
@@ -47,7 +51,3 @@ jobs:
           git pull --rebase
           git push
       # ▲▲▲ ---------------------------------------------------- ▲▲▲
-
-      # 데이터가 비었거나 오래되면 실행을 실패로 표시해 이메일 알림을 받습니다 (데이터 저장 후 마지막에 점검)
-      - name: Check ETF data freshness
-        run: python check_data.py
