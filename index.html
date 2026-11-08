@@ -5,12 +5,36 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="5b25480742a089c2258f62629f538f0cdadcb2cf" name="naver-site-verification"/>
-<title>CryptoFlow Tracker - BTC/ETH ETF 비교</title>
-<meta content="CryptoFlow Tracker는 비트코인(BTC)과 이더리움(ETH)의 실시간 가격, 현물 ETF 현금 흐름, 공급량 데이터를 시각적으로 비교 분석하는 대시보드입니다. 공급량 계산기도 제공합니다." name="description"/>
+<title>비트코인·이더리움 ETF 자금 흐름과 가격 비교 | CryptoFlow</title>
+<meta content="비트코인·이더리움 현물 ETF 순유입·순유출과 가격, 공급량 차트를 비교합니다. 데이터의 의미와 한계를 설명하고 공급량 계산기로 연결합니다." name="description"/>
+<link rel="canonical" href="https://chart.coinsupplycalc.com/"/>
 <link href="favicon.png" rel="icon" type="image/png"/>
 <link href="favicon.png" rel="apple-touch-icon"/>
 <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" referrerpolicy="no-referrer" rel="stylesheet"/>
 <style>
+        /* 검색·접근성 개선: 차트 위에 정적인 설명과 서비스 탐색을 제공합니다. */
+        .skip-link { position: absolute; top: -60px; left: 12px; z-index: 2000; background: #FFB800; color: #121826; padding: 8px 14px; }
+        .skip-link:focus { top: 8px; }
+        .primary-nav { display: flex; flex-wrap: wrap; gap: 10px 20px; width: 100%; padding: 12px 0 4px; font-size: 14px; }
+        .primary-nav a { color: #E5ECF6; text-decoration: underline; text-underline-offset: 3px; }
+        .primary-nav a[aria-current="page"] { color: #FFB800; font-weight: 700; }
+        .overview-intro, .guide-section { background: #1A2233; border-radius: 8px; padding: 20px; margin-top: 20px; line-height: 1.75; }
+        .overview-intro h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin: 0 0 10px; }
+        .overview-intro p, .guide-section p, .guide-section li { color: #c9d5e7; }
+        .guide-section h2 { font-size: 1.25rem; margin-top: 0; }
+        .guide-section ul { padding-left: 22px; }
+        .data-note { font-size: 0.88rem; color: #aebacd; margin-bottom: 0; }
+        .footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 18px; }
+        .footer-links a { color: #ffcc48; }
+        @media (max-width: 700px) {
+            .header-metrics { width: 100%; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; }
+            .live-crypto-price, .live-etf-inflow { text-align: left; }
+            .container { padding: 14px; }
+            .main-chart-container { height: 360px; }
+            .comparison-chart-section, .supply-details-section, .supply-chart-section { padding: 14px; }
+            .comparison-chart-section iframe, .supply-details-section iframe, .supply-chart-section iframe { height: 360px; }
+            .chart-header { gap: 10px; flex-wrap: wrap; }
+        }
         /* CSS 스타일은 이전과 동일하게 유지됩니다. */
         body { font-family: 'Noto Sans KR', sans-serif; margin: 0; background-color: #121826; color: #E5ECF6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -66,6 +90,7 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main-content">본문 바로가기</a>
 <div class="container">
 <header>
 <div class="logo-section">
@@ -76,6 +101,12 @@
 </div>
 <div class="timestamp" id="timestamp-display">Loading time...</div>
 </div>
+<nav class="primary-nav" aria-label="CryptoFlow 주요 메뉴">
+  <a href="https://coinsupplycalc.com/">공급량 계산기</a>
+  <a href="https://chart.coinsupplycalc.com/" aria-current="page">ETF·가격 차트</a>
+  <a href="https://coinsupplycalc.com/guides/">데이터 가이드</a>
+  <a href="https://coinsupplycalc.com/about.html">사이트 소개</a>
+</nav>
 <div class="header-metrics">
 <div class="live-etf-inflow">
 <div id="etf-title">Total ETF Net Inflow</div>
@@ -89,7 +120,12 @@
 </div>
 </div>
 </header>
-<main>
+<main id="main-content">
+<section class="overview-intro" aria-labelledby="dashboard-heading">
+  <h1 id="dashboard-heading">비트코인·이더리움 현물 ETF 자금 흐름과 가격 비교</h1>
+  <p>BTC와 ETH를 선택해 가격 차트, 미국 현물 ETF의 자금 흐름, 공급량 변화 차트를 살펴볼 수 있습니다. 화면의 ETF 데이터는 거래일 기준 집계 자료이므로 실시간 시세와 갱신 시각이 다를 수 있습니다.</p>
+  <p class="data-note">차트는 데이터의 관계를 탐색하는 도구입니다. ETF 순유입액은 ETF의 거래량이나 시장 전체의 실제 매수량과 같지 않으며, 과거 상관관계는 미래 가격을 보장하지 않습니다.</p>
+</section>
 <div class="dashboard">
 <div class="main-chart-container">
 <h2 id="chart-title" style="border-bottom: 1px solid #2a3f5f; padding-bottom: 10px;">실시간 비트코인 가격</h2>
@@ -105,27 +141,45 @@
 </a>
 </div>
 <button class="fullscreen-btn" id="fullscreen-btn" title="전체 화면">↗</button>
-<iframe id="comparison-chart-iframe" src="graph_btc.html"></iframe>
+<iframe id="comparison-chart-iframe" title="BTC 현물 ETF 순유입액과 가격 비교 차트" src="graph_btc.html" loading="lazy"></iframe>
 </div>
 <div class="supply-chart-section" id="supply-chart-section">
 <div class="chart-header">
-<h2 id="supply-chart-title-graph"></h2>
+<h2 id="supply-chart-title-graph">BTC 공급량·가격 추이</h2>
 </div>
 <button class="fullscreen-btn" id="supply-chart-fullscreen-btn" title="전체 화면">↗</button>
-<iframe id="supply-chart-iframe-graph" src="about:blank"></iframe>
+<iframe id="supply-chart-iframe-graph" title="비트코인 공급량 및 가격 차트" src="about:blank" loading="lazy"></iframe>
 </div>
 <div class="supply-details-section" id="supply-details-section">
 <div class="chart-header">
 <div>
-<h2 id="supply-calculator-title"></h2>
+<h2 id="supply-calculator-title">비트코인 공급량 계산기</h2>
 <h5 id="supplyCalculatorSince"></h5>
 </div>
 </div>
 <button class="fullscreen-btn" id="supply-calculator-fullscreen-btn" title="전체 화면">↗</button>
-<iframe id="supply-calculator-iframe" src="about:blank"></iframe>
+<iframe id="supply-calculator-iframe" title="비트코인 공급량 계산 도구" src="about:blank" loading="lazy"></iframe>
 </div>
+<section class="guide-section" aria-labelledby="how-to-read">
+  <h2 id="how-to-read">차트 읽는 방법과 데이터 해석</h2>
+  <ul>
+    <li><strong>일일 ETF 순유입·순유출:</strong> 미국 현물 ETF의 거래일별 자금 흐름입니다. 양수는 순유입, 음수는 순유출이며 주말·휴장일은 일반 거래일과 구분해야 합니다.</li>
+    <li><strong>가격과 자금 흐름:</strong> 가격과 ETF 자금 흐름은 서로 다른 지표입니다. 차트에서 함께 움직여도 직접적인 인과관계로 단정하지 마세요.</li>
+    <li><strong>공급량 변화:</strong> 공급량의 두 관측 시점 차이입니다. 특히 ETH의 순공급 변화가 곧 총 신규 발행량은 아닙니다.</li>
+    <li><strong>기준 시점:</strong> 실시간 가격 표시와 일별 ETF·공급량 자료는 갱신 주기가 다릅니다. 최신 여부는 각 출처의 기준 날짜를 따로 확인하세요.</li>
+  </ul>
+  <p>관련 자료: <a href="https://coinsupplycalc.com/guides/spot-etf-and-supply.html">현물 ETF와 공급량의 관계</a> · <a href="https://coinsupplycalc.com/guides/crypto-supply-terms.html">공급량 용어 정리</a> · <a href="https://coinsupplycalc.com/guides/calculator-guide.html">공급량 계산기 사용법</a>.</p>
+  <p class="data-note">ETF 자금 흐름 출처: <a href="https://farside.co.uk/" target="_blank" rel="noopener noreferrer">Farside Investors</a>. 실제 수집·표시·상업적 이용 조건은 별도 확인이 필요합니다. 이 사이트는 투자 권유가 아닌 정보 제공 목적입니다.</p>
+</section>
 </main>
 <footer>
+<nav class="footer-links" aria-label="사이트 정보">
+  <a href="https://coinsupplycalc.com/about.html">소개</a>
+  <a href="https://coinsupplycalc.com/guides/">가이드</a>
+  <a href="https://coinsupplycalc.com/privacy.html">개인정보처리방침</a>
+  <a href="https://coinsupplycalc.com/terms.html">이용약관·면책조항</a>
+  <a href="https://coinsupplycalc.com/contact.html">문의</a>
+</nav>
 <p>Website ver: 2.4.0 ver | <a href="release-notes.html">Release note 바로가기</a></p>
 <p>Spot ETF Flow Source: <a href="https://farside.co.uk/" target="_blank">Farside Investors</a></p>
 <p>Created by: <a href="mailto:dlwpsms3gkrsus@gmail.com">dlwpsms3gkrsus@gmail.com</a></p>
@@ -222,12 +276,18 @@
             // ▼▼▼ [수정됨] 공급량 관련 섹션 제어 로직 ▼▼▼
             if (currentCoin === 'BTC') {
                 supplyChartTitleGraph.innerText = 'Bitcoin Supply & Price Chart';
+                supplyChartIframeGraph.title = '비트코인 공급량과 가격 차트';
+                supplyCalculatorIframe.title = '비트코인 공급량 계산 도구';
+                comparisonChartIframe.title = 'BTC 현물 ETF 자금 흐름과 가격 비교 차트';
                 supplyChartIframeGraph.src = 'graph_btc_supply.html';
                 supplyCalculatorTitle.innerText = '비트코인 공급량 계산기 (BTC Supply Calculator)';
                 supplyCalculatorSince.innerText = 'since 2009-01-03 조회 가능';
                 supplyCalculatorIframe.src = 'btc_supply_calculator.html';
             } else { // ETH
                 supplyChartTitleGraph.innerText = 'Ethereum Supply & Price Chart';
+                supplyChartIframeGraph.title = '이더리움 공급량과 가격 차트';
+                supplyCalculatorIframe.title = '이더리움 공급량 계산 도구';
+                comparisonChartIframe.title = 'ETH 현물 ETF 자금 흐름과 가격 비교 차트';
                 supplyChartIframeGraph.src = 'graph_eth_supply.html';
                 supplyCalculatorTitle.innerText = '이더리움 공급량 계산기 (ETH Supply Calculator)';
                 supplyCalculatorSince.innerText = 'since 2015-07-30 조회 가능';
